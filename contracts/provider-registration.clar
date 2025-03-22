@@ -1,30 +1,70 @@
+;; Provider Registration Contract
+;; Records details of available medical services
 
-;; title: provider-registration
-;; version:
-;; summary:
-;; description:
+(define-data-var last-id uint u0)
 
-;; traits
-;;
+(define-map providers
+  { id: uint }
+  {
+    name: (string-ascii 100),
+    specialty: (string-ascii 50),
+    location: (string-ascii 100),
+    contact: (string-ascii 100),
+    available: bool,
+    owner: principal
+  }
+)
 
-;; token definitions
-;;
+;; Register provider
+(define-public (register
+    (name (string-ascii 100))
+    (specialty (string-ascii 50))
+    (location (string-ascii 100))
+    (contact (string-ascii 100))
+  )
+  (let
+    (
+      (new-id (+ (var-get last-id) u1))
+    )
+    (var-set last-id new-id)
 
-;; constants
-;;
+    (map-set providers
+      { id: new-id }
+      {
+        name: name,
+        specialty: specialty,
+        location: location,
+        contact: contact,
+        available: true,
+        owner: tx-sender
+      }
+    )
 
-;; data vars
-;;
+    (ok new-id)
+  )
+)
 
-;; data maps
-;;
+;; Update availability
+(define-public (update-availability
+    (provider-id uint)
+    (available bool)
+  )
+  (let
+    (
+      (provider (unwrap! (map-get? providers { id: provider-id }) (err u404)))
+    )
+    (asserts! (is-eq tx-sender (get owner provider)) (err u403))
 
-;; public functions
-;;
+    (map-set providers
+      { id: provider-id }
+      (merge provider { available: available })
+    )
 
-;; read only functions
-;;
+    (ok true)
+  )
+)
 
-;; private functions
-;;
-
+;; Get provider
+(define-read-only (get-provider (id uint))
+  (map-get? providers { id: id })
+)
