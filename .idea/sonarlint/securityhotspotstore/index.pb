@@ -9,3 +9,7 @@ T
 $contracts/provider-registration.clar,2/3/23557918919da38f07f1311edf10b937aa0dbbb9
 S
 #tests/provider-registration.test.ts,4/f/4f59ae49eaefc2445f576ade8a616f564e52da0d
+V
+&contracts/telehealth-facilitation.clar,c/f/cfb1f8cf9390c8cf0865ddb23ce101846c3ebe7e
+U
+%tests/telehealth-facilitation.test.ts,2/7/27a82d69207ab781445cd3dab04f35a1782a3e6c

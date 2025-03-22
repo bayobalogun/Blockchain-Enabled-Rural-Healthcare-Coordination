@@ -1,30 +1,89 @@
+;; Telehealth Facilitation Contract
+;; Manages remote consultations when possible
 
-;; title: telehealth-facilitation
-;; version:
-;; summary:
-;; description:
+(define-data-var last-id uint u0)
 
-;; traits
-;;
+(define-map sessions
+  { id: uint }
+  {
+    provider-id: uint,
+    patient: principal,
+    scheduled-time: uint,
+    duration: uint,
+    session-link: (string-ascii 100),
+    status: (string-ascii 20)
+  }
+)
 
-;; token definitions
-;;
+;; Schedule session
+(define-public (schedule-session
+    (provider-id uint)
+    (scheduled-time uint)
+    (duration uint)
+  )
+  (let
+    (
+      (new-id (+ (var-get last-id) u1))
+    )
+    (var-set last-id new-id)
 
-;; constants
-;;
+    (map-set sessions
+      { id: new-id }
+      {
+        provider-id: provider-id,
+        patient: tx-sender,
+        scheduled-time: scheduled-time,
+        duration: duration,
+        session-link: "",
+        status: "scheduled"
+      }
+    )
 
-;; data vars
-;;
+    (ok new-id)
+  )
+)
 
-;; data maps
-;;
+;; Set session link
+(define-public (set-session-link
+    (session-id uint)
+    (session-link (string-ascii 100))
+  )
+  (let
+    (
+      (session (unwrap! (map-get? sessions { id: session-id }) (err u404)))
+    )
 
-;; public functions
-;;
+    (map-set sessions
+      { id: session-id }
+      (merge session {
+        session-link: session-link,
+        status: "ready"
+      })
+    )
 
-;; read only functions
-;;
+    (ok true)
+  )
+)
 
-;; private functions
-;;
+;; Complete session
+(define-public (complete-session
+    (session-id uint)
+  )
+  (let
+    (
+      (session (unwrap! (map-get? sessions { id: session-id }) (err u404)))
+    )
 
+    (map-set sessions
+      { id: session-id }
+      (merge session { status: "completed" })
+    )
+
+    (ok true)
+  )
+)
+
+;; Get session
+(define-read-only (get-session (id uint))
+  (map-get? sessions { id: id })
+)
